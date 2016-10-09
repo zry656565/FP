@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/zry656565/FP/issues"
   },
-  "homepage": "https://github.com/zry656565/FP#readme"
+  "homepage": "https://github.com/zry656565/FP#readme",
+  "dependencies": {
+    "a-star": "^0.2.0"
+  }
 }
