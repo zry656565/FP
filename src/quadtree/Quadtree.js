@@ -7,8 +7,8 @@ const { NW, NE, SW, SE } = QUADRANT;
 class Quadtree {
   constructor(options) {
     options = Object.assign({
-      width: 524,
-      height: 524,
+      width: 512,
+      height: 512,
       isGray(node) {
         return node.val !== 0 && node.val !== 1;
       },
@@ -22,36 +22,52 @@ class Quadtree {
   }
 
   findAvailableNeighbors(node) {
-    neighbors = new Set([
-      _findAdjNeighbor(node, N),
-      _findAdjNeighbor(node, E),
-      _findAdjNeighbor(node, S),
-      _findAdjNeighbor(node, W),
-      _findCornerNeighbor(node, NW),
-      _findCornerNeighbor(node, NE),
-      _findCornerNeighbor(node, SW),
-      _findCornerNeighbor(node, SE),
+    let neighbors = new Set([
+      this._findAdjNeighbor(node, N),
+      this._findAdjNeighbor(node, E),
+      this._findAdjNeighbor(node, S),
+      this._findAdjNeighbor(node, W),
+      this._findCornerNeighbor(node, NW),
+      this._findCornerNeighbor(node, NE),
+      this._findCornerNeighbor(node, SW),
+      this._findCornerNeighbor(node, SE),
     ]);
     neighbors.delete(null);
     return Array.from(neighbors);
   }
 
   _findAdjNeighbor(node, side) {
-    let parent;
+    let tmpNode;
     if (node.parent && adj(side, node.sonType)) {
-      parent = _findAdjNeighbor(node.parent, side);
+      tmpNode = this._findAdjNeighbor(node.parent, side);
     } else {
-      parent = node.parent;
+      tmpNode = node.parent;
     }
-    if (parent && this.isGray(parent)) {
-      return parent.getChild(reflect(side, node.sonType));
+
+    if (tmpNode && this.isGray(tmpNode)) {
+      return tmpNode.getChild(reflect(side, node.sonType));
     } else {
-      return parent;
+      return tmpNode;
     }
   }
 
   _findCornerNeighbor(node, quadrant) {
+    let tmpNode;
+    if (node.parent && node.sonType !== opquad(quadrant)) {
+      if (node.sonType === quadrant) {
+        tmpNode = this._findCornerNeighbor(node.parent, quadrant);
+      } else {
+        tmpNode = this._findAdjNeighbor(node.parent, commonSide(node.sonType, quadrant));
+      }
+    } else {
+      tmpNode = node.parent;
+    }
 
+    if (tmpNode && this.isGray(tmpNode)) {
+      return tmpNode.getChild(opquad(node.sonType))
+    } else {
+      return tmpNode;
+    }
   }
 }
 
@@ -101,10 +117,11 @@ class Node {
 
   setChildren(vals) {
     if (vals.length !== 4) throw new Error('[Quadtree - setChildren]: length of vals must be 4');
-    this.children[NW] = new Node(this, NW, val);
-    this.children[NE] = new Node(this, NE, val);
-    this.children[SW] = new Node(this, SW, val);
-    this.children[SE] = new Node(this, SE, val);
+    this.children = [];
+    this.children[NW] = new Node(this, NW, vals[NW]);
+    this.children[NE] = new Node(this, NE, vals[NE]);
+    this.children[SW] = new Node(this, SW, vals[SW]);
+    this.children[SE] = new Node(this, SE, vals[SE]);
   }
 
   setChild(quadrant, val) {
