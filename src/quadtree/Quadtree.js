@@ -9,6 +9,8 @@ class Quadtree {
     options = Object.assign({
       width: 512,
       height: 512,
+      maxDepth: 8,
+      leafRatio: 0.2,
       isGray(node) {
         return node.val !== 0 && node.val !== 1;
       },
@@ -19,6 +21,69 @@ class Quadtree {
       height: options.height
     });
     this.isGray = options.isGray;
+    this.maxDepth = options.maxDepth;
+    this.leafRatio = options.leafRatio;
+  }
+
+  setArea(x, y, w, h, val) {
+    return this._setArea(this.root, x, y, w, h, val);
+  }
+
+  // TODO: cannot merge results for now.
+  _setArea(node, x, y, w, h, val) {
+    if (node.x === x && node.y === y && node.width === w && node.height === h) {
+      node.val = val;
+      return;
+    }
+
+    if (node.depth === this.maxDepth) {
+      node.val = val;
+      return;
+    }
+
+    let centerX = node.x + node.width / 2;
+    let centerY = node.y + node.height / 2;
+    if (!node.children) node.setChildren([0, 0, 0, 0]);
+    if (y < centerY) {
+      if (x < centerX) {
+        // NW
+        node.val = 0.5;
+        this._setArea(
+          node.getChild(NW),
+          x, y,
+          Math.min(w, centerX - x), Math.min(h, centerY - y),
+          val);
+      }
+      if (x + w > centerX) {
+        // NE
+        node.val = 0.5;
+        this._setArea(
+          node.getChild(NE),
+          Math.max(x, centerX), y,
+          Math.min(x + w - centerX, w), Math.min(h, y + h - centerY),
+          val);
+      }
+    }
+    if (y + h > centerY) {
+      if (x < centerX) {
+        // SW
+        node.val = 0.5;
+        this._setArea(
+          node.getChild(SW),
+          x, Math.max(y, centerY),
+          Math.min(w, centerX - x), Math.min(h, y + h - centerY),
+          val);
+      }
+      if (x + w > centerX) {
+        // SE
+        node.val = 0.5;
+        this._setArea(
+          node.getChild(SE),
+          Math.max(x, centerX), Math.max(y, centerY),
+          Math.min(x + w - centerX, w), Math.min(h, y + h - centerY),
+          val);
+      }
+    }
   }
 
   findAvailableNeighbors(node) {
@@ -142,13 +207,5 @@ class Node {
     return this.children[quadrant];
   }
 }
-
-t = new Quadtree();
-t.root.setChildren([0.5, 0.5, 1, 1]);
-let nw = t.root.getChild(NW);
-nw.setChildren([0, 1, 0, 0]);
-let ne = t.root.getChild(NE);
-ne.setChildren([0, 0, 1, 0]);
-
 
 module.exports = Quadtree;
