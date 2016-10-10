@@ -5,7 +5,7 @@ const { N, E, S, W } = SIDE;
 const { NW, NE, SW, SE } = QUADRANT;
 
 class Quadtree {
-  constructor(options) {
+  constructor(grid = null, options = {}) {
     options = Object.assign({
       width: 512,
       height: 512,
@@ -23,6 +23,29 @@ class Quadtree {
     this.isGray = options.isGray;
     this.maxDepth = options.maxDepth;
     this.leafRatio = options.leafRatio;
+
+    if (grid) {
+      this._initialFromGrid(grid);
+    }
+  }
+
+  // grid is a 2d array.
+  _initialFromGrid(grid) {
+    
+  }
+
+  // find the node which contain Point(x, y)
+  getNode(x, y) {
+    let node = this.root;
+    while(node.children) {
+      let centerX = node.x + node.width / 2;
+      let centerY = node.y + node.height / 2;
+      if (x < centerX && y < centerY) node = node.getChild(NW);
+      else if (x >= centerX && y < centerY) node = node.getChild(NE);
+      else if (x < centerX && y >= centerY) node = node.getChild(SW);
+      else node = node.getChild(SE);
+    }
+    return node;
   }
 
   setArea(x, y, w, h, val) {
@@ -98,6 +121,10 @@ class Quadtree {
       this._findCornerNeighbor(node, SE),
     ]);
     neighbors.delete(null);
+    // remove unreachable node
+    for (let n of neighbors) {
+      if (n.val !== 0) neighbors.delete(n);
+    }
     return Array.from(neighbors);
   }
 

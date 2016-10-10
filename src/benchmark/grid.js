@@ -1,8 +1,8 @@
 const aStar = require('a-star');
 const GridMap = require('../grid/GridMap');
 
-let w = 524;
-let h = 524;
+let w = 512;
+let h = 512;
 let map = new GridMap(w, h);
 let start = [0, 0];
 let end = [333, 192];
