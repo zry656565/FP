@@ -1,19 +1,19 @@
 'use strict';
 
-const { SIDE, QUADRANT, adj, reflect, opquad, commonSide } = require('./utils');
+const { SIDE, QUADRANT, adj, reflect, opside, opquad, commonSide } = require('./utils');
 const { N, E, S, W } = SIDE;
 const { NW, NE, SW, SE } = QUADRANT;
 
 class Quadtree {
-  constructor(grid = null, options = {}) {
+  constructor(options = {}) {
     options = Object.assign({
       width: 512,
       height: 512,
-      maxDepth: 8,
+      maxDepth: 10,
       leafRatio: 0.2,
       isGray(node) {
         return node.val !== 0 && node.val !== 1;
-      },
+      }
     }, options);
     
     this.root = new Node(null, NW, 0, {
@@ -23,15 +23,6 @@ class Quadtree {
     this.isGray = options.isGray;
     this.maxDepth = options.maxDepth;
     this.leafRatio = options.leafRatio;
-
-    if (grid) {
-      this._initialFromGrid(grid);
-    }
-  }
-
-  // grid is a 2d array.
-  _initialFromGrid(grid) {
-    
   }
 
   // find the node which contain Point(x, y)
@@ -52,15 +43,16 @@ class Quadtree {
     return this._setArea(this.root, x, y, w, h, val);
   }
 
-  // TODO: cannot merge results for now.
   _setArea(node, x, y, w, h, val) {
     if (node.x === x && node.y === y && node.width === w && node.height === h) {
       node.val = val;
+      this._updateParent(node);
       return;
     }
 
-    if (node.depth === this.maxDepth) {
+    if (node.depth === this.maxDepth - 1) {
       node.val = val;
+      this._updateParent(node);
       return;
     }
 
@@ -83,7 +75,7 @@ class Quadtree {
         this._setArea(
           node.getChild(NE),
           Math.max(x, centerX), y,
-          Math.min(x + w - centerX, w), Math.min(h, y + h - centerY),
+          Math.min(x + w - centerX, w), Math.min(h, centerY - y),
           val);
       }
     }
@@ -109,17 +101,48 @@ class Quadtree {
     }
   }
 
+  _updateParent(node) {
+    let val = node.val;
+    let parent = node.parent;
+    if (!parent) return;
+    if (parent.getChild(NW).val === val
+      && parent.getChild(NE).val === val
+      && parent.getChild(SW).val === val
+      && parent.getChild(SE).val === val) {
+      parent.val = val;
+      this._updateParent(parent);
+    }
+  }
+
   findAvailableNeighbors(node) {
-    let neighbors = new Set([
-      this._findAdjNeighbor(node, N),
-      this._findAdjNeighbor(node, E),
-      this._findAdjNeighbor(node, S),
-      this._findAdjNeighbor(node, W),
-      this._findCornerNeighbor(node, NW),
-      this._findCornerNeighbor(node, NE),
-      this._findCornerNeighbor(node, SW),
-      this._findCornerNeighbor(node, SE),
-    ]);
+    let candidates = [];
+    [N, E, S, W].forEach(side => {
+      let queue = [ this._findAdjNeighbor(node, side) ];
+      let leafSide = opside(side);
+      while (queue.length > 0) {
+        let candidate = queue.shift();
+        if (!candidate) continue;
+        if (!this.isGray(candidate)) {
+          candidates.push(candidate);
+        } else {
+          [NW, NE, SW, SE].forEach(quadrant => {
+            if (adj(leafSide, quadrant)) {
+              queue.push(candidate.getChild(quadrant));
+            }
+          });
+        }
+      }
+    });
+
+    candidates.concat([NW, NE, SW, SE].map(quadrant => {
+      let candidate = this._findCornerNeighbor(node, quadrant);
+      let leafQuadrant = opquad(quadrant);
+      while (candidate && this.isGray(candidate)) {
+        candidate = candidate.getChild(leafQuadrant);
+      }
+      return candidate;
+    }));
+    let neighbors = new Set(candidates);
     neighbors.delete(null);
     // remove unreachable node
     for (let n of neighbors) {

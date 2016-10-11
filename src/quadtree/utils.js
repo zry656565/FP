@@ -66,6 +66,19 @@ function reflect(side, quadrant) {
   }
 }
 
+function opside(side) {
+  switch (side) {
+    case N:
+      return S;
+    case S:
+      return N;
+    case E:
+      return W;
+    case W:
+      return E;
+  }
+}
+
 function opquad(quadrant) {
   switch (quadrant) {
     case NW:
@@ -122,6 +135,7 @@ module.exports = {
   QUADRANT,
   adj,
   reflect,
+  opside,
   opquad,
   commonSide
 };
