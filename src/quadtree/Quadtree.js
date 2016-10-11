@@ -39,6 +39,10 @@ class Quadtree {
     return node;
   }
 
+  toString() {
+    return this.root.toString();
+  }
+
   setArea(x, y, w, h, val) {
     return this._setArea(this.root, x, y, w, h, val);
   }
@@ -255,6 +259,18 @@ class Node {
 
   getChild(quadrant) {
     return this.children[quadrant];
+  }
+
+  toString() {
+    if (this.val === 0 || this.val === 1) {
+      return this.val;
+    } else {
+      var children = [];
+      for (let node of this.children) {
+        children.push(node.toString());
+        return children.toString();
+      }
+    }
   }
 }
 
