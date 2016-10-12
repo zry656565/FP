@@ -50,11 +50,6 @@ class Quadtree {
     return node;
   }
 
-  getVal(node) {
-    if (node.depth < level) return node.val;
-    return node.val > 0 ? 1 : 0;
-  }
-
   toString() {
     return this.root.toString();
   }

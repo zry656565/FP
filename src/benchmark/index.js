@@ -4,7 +4,18 @@ const Quadtree = require('../structures/Quadtree');
 const { generateObstacles, generateAvailablePoint } = require('./utils');
 
 function test(MapPrototype, w, h, obstacleNum) {
-  let map = new MapPrototype(w, h);
+  let map;
+  if (MapPrototype === GridMap) {
+    map = new GridMap(w, h);
+  } else if (MapPrototype === Quadtree) {
+    map = new Quadtree({
+      width: w,
+      height: h,
+    });
+  } else {
+    throw new TypeError('Prototype of Map must be GridMap/Quadtree');
+  }
+  
 
   generateObstacles(map, obstacleNum);
 
@@ -39,7 +50,7 @@ for (let i = 5; i <= 12; i++) {
     }
     noPathRate = failureTimes / count * 100;
     printArr.push(`Map(${w}, ${w}), Obstacles: ${j}, avgTime: ${time / count}, noPath: ${noPathRate}%`);
-    console.log(`Map(${w}, ${w}), Obstacles: ${j}, DONE`);
+    console.log(`Map(${w}, ${w}), Obstacles: ${j}, avgTime: ${time / count}, noPath: ${noPathRate}%`);
   }
 }
 
