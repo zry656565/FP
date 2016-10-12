@@ -12,7 +12,10 @@ class Quadtree {
       maxDepth: 10,
       leafRatio: 0.2,
       isGray(node) {
-        return node.val !== 0 && node.val !== 1;
+        let val;
+        if (node.depth < this.level) val = node.val;
+        else val = node.val > 0 ? 1 : 0;
+        return val !== 0 && val !== 1;
       }
     }, options);
     
@@ -20,15 +23,23 @@ class Quadtree {
       width: options.width,
       height: options.height
     });
+    this.width = options.width;
+    this.height = options.height;
     this.isGray = options.isGray;
     this.maxDepth = options.maxDepth;
+    this.level = this.maxDepth;
     this.leafRatio = options.leafRatio;
+  }
+
+  setLevel(level) {
+    if (typeof level !== 'number') return;
+    this.level = level;
   }
 
   // find the node which contain Point(x, y)
   getNode(x, y) {
     let node = this.root;
-    while(node.children) {
+    while(this.isGray(node)) {
       let centerX = node.x + node.width / 2;
       let centerY = node.y + node.height / 2;
       if (x < centerX && y < centerY) node = node.getChild(NW);
@@ -37,6 +48,11 @@ class Quadtree {
       else node = node.getChild(SE);
     }
     return node;
+  }
+
+  getVal(node) {
+    if (node.depth < level) return node.val;
+    return node.val > 0 ? 1 : 0;
   }
 
   toString() {
@@ -187,6 +203,34 @@ class Quadtree {
     } else {
       return tmpNode;
     }
+  }
+
+  generateConfig(start, end) {
+    let map = this;
+    return {
+      start,
+      isEnd(node) {
+        return node === end;
+      },
+      neighbor(node) {
+        return map.findAvailableNeighbors(node);
+      },
+      distance(a, b) {
+        let x1 = a.x + a.width / 2;
+        let y1 = a.y + a.height / 2;
+        let x2 = b.x + b.width / 2;
+        let y2 = b.y + b.height / 2;
+        return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2), 2);
+      },
+      heuristic(node) {
+        let x = node.x + node.width / 2;
+        let y = node.y + node.height / 2;
+        return Math.abs(x - end.x) + Math.abs(y - end.y);
+      },
+      hash(node) {
+        return `${node.x},${node.y},${node.width},${node.height}`;
+      }
+    };
   }
 }
 

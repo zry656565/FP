@@ -1,5 +1,29 @@
-const gridTest = require('./grid');
-const quadtreeTest = require('./quadtree');
+const aStar = require('a-star');
+const GridMap = require('../structures/GridMap');
+const Quadtree = require('../structures/Quadtree');
+const { generateObstacles, generateAvailablePoint } = require('./utils');
+
+function test(MapPrototype, w, h, obstacleNum) {
+  let map = new MapPrototype(w, h);
+
+  generateObstacles(map, obstacleNum);
+
+  let start = generateAvailablePoint(map, [0, w / 4], [0, h / 4]);
+  let end = generateAvailablePoint(map, [3 * w / 4, w], [3 * h / 4, h]);
+
+  let config = map.generateConfig(start, end);
+
+  let startTime = Date.now();
+  let path = aStar(config);
+  let time =  Date.now() - startTime;
+
+  return {
+    start,
+    end,
+    time,
+    path
+  };
+}
 
 let printArr = [];
 let count = 100;
@@ -9,7 +33,7 @@ for (let i = 5; i <= 12; i++) {
     let time = 0;
     let failureTimes = 0;
     for (let k = 0; k < count; k++) {
-      let r = quadtreeTest(w, w, j);
+      let r = test(Quadtree, w, w, j);
       time += r.time;
       if (r.path.status === 'noPath') failureTimes++;
     }
@@ -22,6 +46,3 @@ for (let i = 5; i <= 12; i++) {
 for (let message of printArr) {
   console.log(message);
 }
-
-// let r = quadtreeTest(32, 32, 4);
-// console.log(r);
