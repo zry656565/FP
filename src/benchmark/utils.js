@@ -19,10 +19,10 @@ function generateObstacles(map, num) {
 
 function generateAvailablePoint(map, rangeX, rangeY) {
   let isQuadtree = map instanceof Quadtree;
-  let xMax = rangeX[1];
-  let xMin = rangeX[0];
-  let yMax = rangeY[1];
-  let yMin = rangeY[0];
+  let xMax = rangeX[1] * map.width;
+  let xMin = rangeX[0] * map.width;
+  let yMax = rangeY[1] * map.height;
+  let yMin = rangeY[0] * map.height;
   while (true) {
     let y = Math.floor((yMax - yMin) * Math.random()) + yMin;
     let x = Math.floor((xMax - xMin) * Math.random()) + xMin;

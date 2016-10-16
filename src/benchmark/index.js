@@ -15,12 +15,11 @@ function test(MapPrototype, w, h, obstacleNum) {
   } else {
     throw new TypeError('Prototype of Map must be GridMap/Quadtree');
   }
-  
 
   generateObstacles(map, obstacleNum);
 
-  let start = generateAvailablePoint(map, [0, w / 4], [0, h / 4]);
-  let end = generateAvailablePoint(map, [3 * w / 4, w], [3 * h / 4, h]);
+  let start = generateAvailablePoint(map, [0, 1 / 4], [0, 1 / 4]);
+  let end = generateAvailablePoint(map, [3 / 4, 1], [3 / 4, 1]);
 
   let config = map.generateConfig(start, end);
 
@@ -36,7 +35,6 @@ function test(MapPrototype, w, h, obstacleNum) {
   };
 }
 
-let printArr = [];
 let count = 100;
 for (let i = 5; i <= 12; i++) {
   for (let j = 0; j <= 10; j++) {
@@ -49,11 +47,6 @@ for (let i = 5; i <= 12; i++) {
       if (r.path.status === 'noPath') failureTimes++;
     }
     noPathRate = failureTimes / count * 100;
-    printArr.push(`Map(${w}, ${w}), Obstacles: ${j}, avgTime: ${time / count}, noPath: ${noPathRate}%`);
     console.log(`Map(${w}, ${w}), Obstacles: ${j}, avgTime: ${time / count}, noPath: ${noPathRate}%`);
   }
-}
-
-for (let message of printArr) {
-  console.log(message);
 }
