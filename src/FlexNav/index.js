@@ -41,7 +41,7 @@ class FlexNav {
       }
     }
     return {
-      status: `Cannot give a path under ${limitTime} ms`,
+      status: "unavailable",
       time: -1,
       path: []
     }
@@ -59,6 +59,7 @@ class FlexNav {
     let time =  Date.now() - startTime;
 
     return {
+      status: path.status,
       time,
       path
     };
