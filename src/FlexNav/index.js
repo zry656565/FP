@@ -10,13 +10,13 @@ class Point {
 }
 
 class FlexNav {
-  constructor(map) {
+  constructor(map, alpha, beta) {
     if (!(map instanceof Quadtree)) throw new TypeError('FlexNav only accept an instance of Quadtree');
     this.map = map;
-    this.preprocess();
+    this.preprocess(alpha, beta);
   }
   
-  preprocess() {
+  preprocess(alpha = 0.8, beta = 1.2) {
     let times = [];
     let results = [];
     let testcaseNum = 10;
@@ -28,7 +28,7 @@ class FlexNav {
         results.push(result.time);
       }
       results.sort((a, b) => a - b);
-      times.push(results[Math.floor(testcaseNum * 0.8) - 1] * 1.2);
+      times.push(results[Math.floor(testcaseNum * alpha) - 1] * beta);
       results.length = 0;
     }
     this.times = times;
@@ -42,6 +42,7 @@ class FlexNav {
     }
     return {
       status: "unavailable",
+      level: -1,
       time: -1,
       path: []
     }
@@ -60,6 +61,7 @@ class FlexNav {
 
     return {
       status: path.status,
+      level: this.map.level,
       time,
       path
     };
