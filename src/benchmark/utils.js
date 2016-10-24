@@ -1,6 +1,19 @@
 const Quadtree = require('../structures/Quadtree');
 const obstacleLib = require('./obstacleLib');
 
+function generateObstacle(map, data) {
+  let obstacle = data.map((val, index) => {
+    return Math.floor(index % 2 === 0 ? val * map.width : val * map.height);
+  });
+  map.setArea.apply(map, obstacle.concat([1]));
+}
+
+function generateMap(map, data) {
+  for (d of data) {
+    generateObstacle(map, d);
+  }
+}
+
 function generateObstacles(map, num) {
   let used = new Set();
   let len = obstacleLib.length;
@@ -10,10 +23,7 @@ function generateObstacles(map, num) {
       o = obstacleLib[Math.floor(Math.random() * len)];
     } while (used.has(o));
     used.add(o);
-    let obstacle = o.map((val, index) => {
-      return Math.floor(index % 2 === 0 ? val * map.width : val * map.height);
-    });
-    map.setArea.apply(map, obstacle.concat([1]));
+    generateObstacle(map, o);
   }
 }
 
@@ -41,6 +51,7 @@ function generateAvailablePoint(map, rangeX, rangeY) {
 }
 
 module.exports = {
+  generateMap,
   generateObstacles,
   generateAvailablePoint,
 }
